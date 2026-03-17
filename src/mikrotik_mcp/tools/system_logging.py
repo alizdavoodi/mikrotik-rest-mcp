@@ -141,17 +141,14 @@ def register(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """Update an existing logging rule by ID."""
         manager = get_manager(ctx)
-        payload: dict[str, Any] = {}
-        if topics is not None:
-            payload["topics"] = topics
-        if action is not None:
-            payload["action"] = action
-        if prefix is not None:
-            payload["prefix"] = prefix
-        if disabled is not None:
-            payload["disabled"] = "true" if disabled else "false"
+        data = LoggingRuleUpdate(
+            topics=topics, action=action, prefix=prefix, disabled=disabled
+        )
+        payload = data.model_dump(exclude_none=True)
         if not payload:
             raise ValueError("At least one update field must be provided")
+        if "disabled" in payload:
+            payload["disabled"] = "true" if payload["disabled"] else "false"
         await manager.patch(f"system/logging/{rule_id}", json=payload)
         return {"updated": True, "id": rule_id}
 
