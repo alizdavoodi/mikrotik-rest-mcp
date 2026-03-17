@@ -37,11 +37,17 @@ def _filter_logs(
             if message_filter.lower() in str(row.get("message", "")).lower()
         ]
     if prefix_filter:
-        filtered = [
-            row
-            for row in filtered
-            if str(row.get("message", "")).startswith(prefix_filter)
-        ]
+        prefixes = [p.strip() for p in prefix_filter.split(",") if p.strip()]
+        if prefixes:
+            filtered = [
+                row
+                for row in filtered
+                if any(
+                    str(row.get("message", "")).startswith(p)
+                    or str(row.get("prefix", "")) == p
+                    for p in prefixes
+                )
+            ]
     return filtered
 
 
