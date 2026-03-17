@@ -99,6 +99,7 @@ def register(mcp: FastMCP) -> None:
 | `system_users.py` | `user` | 8 | Users + groups + active sessions |
 | `system_backup.py` | `system/backup` | 5 | File upload/download via `file` path |
 | `system_logs.py` | `log` | 6 | Client-side severity/topic/search filtering |
+| `system_logging.py` | `system/logging`, `system/logging/action` | 12 | Rules + actions CRUD, `_translate()` for kebab fields |
 | `dhcp_server.py` | `ip/dhcp-server` | 4 | |
 | `dhcp_lease.py` | `ip/dhcp-server/lease` | 4 | |
 | `dhcp_pool.py` | `ip/pool` | 5 | Shares REST path with `ip_pool.py` (DHCP context) |
@@ -107,9 +108,9 @@ def register(mcp: FastMCP) -> None:
 
 **Simple** (ip_address, interface_vlan, dhcp_lease): Straight CRUD, no translation needed.
 
-**With translation** (firewall_filter, firewall_nat): Have `_translate()` to convert `src_address` → `src-address`. Also convert `bool` → `"true"/"false"` string. Copy the `_translate()` function if adding firewall-adjacent modules.
+**With translation** (firewall_filter, firewall_nat, system_logging): Have `_translate()` to convert `src_address` → `src-address`. Also convert `bool` → `"true"/"false"` string. Copy the `_translate()` function if adding firewall-adjacent modules.
 
-**With sub-resources** (interface_wireguard, system_backup, ip_route): Multiple REST paths in one module. WireGuard manages both `interface/wireguard` and `interface/wireguard/peers`.
+**With sub-resources** (interface_wireguard, system_backup, ip_route, system_logging): Multiple REST paths in one module. WireGuard manages both `interface/wireguard` and `interface/wireguard/peers`. `system_logging` manages both `system/logging` (rules) and `system/logging/action` (actions).
 
 **With special operations** (ip_route, system_logs): Non-CRUD operations like cache flush (`DELETE ip/route/cache`), route path check (`POST`), log search (client-side filtering).
 

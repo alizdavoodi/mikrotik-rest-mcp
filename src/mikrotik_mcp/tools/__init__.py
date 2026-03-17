@@ -33,6 +33,7 @@ def register_tools(mcp: FastMCP) -> None:
     from . import ip_route
     from . import system_backup
     from . import system_logs
+    from . import system_logging
     from . import system_users
 
     ip_address.register(mcp)
@@ -49,6 +50,7 @@ def register_tools(mcp: FastMCP) -> None:
     system_users.register(mcp)
     system_backup.register(mcp)
     system_logs.register(mcp)
+    system_logging.register(mcp)
     dhcp_server.register(mcp)
     dhcp_lease.register(mcp)
     dhcp_pool.register(mcp)
