@@ -3,204 +3,246 @@
 
 # MikroTik MCP Server
 
-*Manage MikroTik RouterOS devices through the Model Context Protocol*
+*FastMCP server that exposes MikroTik RouterOS REST API as MCP tools*
 
 [![Python](https://img.shields.io/badge/Python->=3.11-3776ab?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
-[![MikroTik](https://img.shields.io/badge/RouterOS-v7.1+-e22a27?style=flat-square)](https://mikrotik.com)
+[![RouterOS](https://img.shields.io/badge/RouterOS-v7.1+-e4182c?style=flat-square)](https://mikrotik.com)
 [![FastMCP](https://img.shields.io/badge/FastMCP->=3.1-6f42c1?style=flat-square)](https://github.com/jlowin/fastmcp)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-[Overview](#overview) • [Getting Started](#getting-started) • [Configuration](#configuration) • [Features](#features) • [Architecture](#architecture) • [Security](#security)
+[Overview](#overview) • [Get Started](#get-started) • [Configuration](#configuration) • [OpenCode Skill](#opencode-skill-recommended) • [Troubleshooting](#troubleshooting)
 
 </div>
 
+Manage MikroTik devices from any MCP-compatible client (Claude Desktop, OpenCode, or custom MCP clients) using a single server package.
+
+> [!NOTE]
+> This project exposes **100+ tools** across IP, firewall, DNS, DHCP, interfaces, and system domains. For OpenCode, skill-first usage is recommended to avoid loading a very large tool surface into context by default.
+
 ## Overview
 
-A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server that exposes MikroTik RouterOS management capabilities as tools for AI assistants. Built with [FastMCP](https://github.com/jlowin/fastmcp), it connects to your router's REST API and provides **100+ tools** across 6 domains — IP management, firewall, DNS, DHCP, interfaces, and system administration.
+This server wraps RouterOS REST endpoints (`/rest/...`) and exposes them as typed MCP tools.
 
-Use it with Claude Desktop, or any MCP-compatible client to manage your MikroTik devices through natural language.
+- Built with `FastMCP` + async `httpx`
+- Pydantic validation for inputs and settings
+- `stdio`, `sse`, and `streamable-http` transport modes
+- Single connection manager shared through MCP lifespan
 
-## Getting Started
+## Get Started
 
 ### Prerequisites
 
-- **Python 3.11+**
-- **MikroTik RouterOS v7.1+** with the REST API enabled (available on port 80/443 by default)
+- Python 3.11+
+- MikroTik RouterOS v7.1+ with REST API reachable
 
-### Installation
+### Install
+
+Package users:
 
 ```bash
-git clone https://github.com/yourusername/mikrotik-api-mcp.git
-cd mikrotik-api-mcp
+pip install mikrotik-mcp
+```
+
+From source (contributors):
+
+```bash
 pip install -e .
 ```
 
-<details>
-<summary><strong>Using Nix</strong></summary>
-
-If you have [Nix](https://nixos.org) installed, enter the development shell which sets up Python and a virtual environment automatically:
+If you prefer Nix for development:
 
 ```bash
-nix-shell
+nix develop
 ```
 
-</details>
+### Run
 
-### Quick Start
+```bash
+export MIKROTIK_HOST=192.168.88.1
+export MIKROTIK_USERNAME=admin
+export MIKROTIK_PASSWORD=yourpassword
+export MIKROTIK_PORT=80
 
-1. Set your router credentials:
+mikrotik-mcp
+```
 
-    ```bash
-    export MIKROTIK_HOST=192.168.88.1
-    export MIKROTIK_USERNAME=admin
-    export MIKROTIK_PASSWORD=yourpassword
-    ```
+Test with MCP Inspector:
 
-2. Run the server:
+```bash
+npx @modelcontextprotocol/inspector mikrotik-mcp
+```
 
-    ```bash
-    python -m mikrotik_mcp.server
-    ```
+## Configuration
 
-3. Or test interactively with MCP Inspector:
+All settings are read from process environment variables.
 
-    ```bash
-    npx @modelcontextprotocol/inspector python -m mikrotik_mcp.server
-    ```
+| Variable | Description | Default |
+|---|---|---|
+| `MIKROTIK_HOST` | Router IP or hostname | *(required)* |
+| `MIKROTIK_USERNAME` | Router username | `admin` |
+| `MIKROTIK_PASSWORD` | Router password | *(required)* |
+| `MIKROTIK_PORT` | RouterOS REST API port | `80` |
+| `MIKROTIK_USE_SSL` | Use HTTPS | `false` |
+| `MIKROTIK_SSL_VERIFY` | Verify TLS certificate | `false` |
+| `MIKROTIK__MCP__TRANSPORT` | MCP transport: `stdio`, `sse`, `streamable-http` | `stdio` |
+| `MIKROTIK__MCP__HOST` | Bind host for non-stdio transports | `0.0.0.0` |
+| `MIKROTIK__MCP__PORT` | Bind port for non-stdio transports | `8000` |
 
-### Usage with Claude Desktop
+> [!IMPORTANT]
+> `mikrotik-mcp` reads **process env**. It does not auto-load `.env`. In MCP clients, prefer setting variables in the client's `env` / `environment` block.
 
-Add the following to your Claude Desktop configuration file:
+SSE example:
 
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+```bash
+MIKROTIK__MCP__TRANSPORT=sse mikrotik-mcp
+```
+
+## Tool Coverage
+
+Registered domains include:
+
+- **IP**: addresses, routes, pools
+- **DNS**: resolver config, cache, static entries
+- **Firewall**: filter rules, NAT, address lists
+- **Interfaces**: VLAN, wireless, WireGuard
+- **DHCP**: servers, leases, pools
+- **System**: users, backups, logs, logging rules/actions
+
+Tool naming convention follows `mikrotik_<verb>_<resource>`.
+
+## OpenCode Skill (recommended)
+
+This repo ships a project-local OpenCode skill:
+
+- `.opencode/skills/mikrotik/SKILL.md`
+
+Why this is the best default in OpenCode:
+
+- `mikrotik-mcp` has a large tool set, which can inflate context if always loaded globally.
+- Skill-first workflow activates the MCP tool surface only when needed.
+- Skill config explicitly passes `MIKROTIK_*` into the spawned MCP process.
+
+Usage:
+
+```text
+skill(name="mikrotik")
+skill_mcp(mcp_name="mikrotik", tool_name="mikrotik_list_ip_addresses")
+skill_mcp(mcp_name="mikrotik", tool_name="mikrotik_get_dns_settings")
+```
+
+## Global Skill Setup (all sessions)
+
+If you want this skill available in every session (not just this repo), install it globally.
+
+### OpenCode global paths
+
+- `~/.config/opencode/skills/<skill-name>/SKILL.md` (OpenCode native)
+- `~/.claude/skills/<skill-name>/SKILL.md` (Claude-compatible path often used with OpenCode setups)
+- `~/.agents/skills/<skill-name>/SKILL.md` (Agent Skills compatibility path)
+
+### Claude Code global path
+
+- `~/.claude/skills/<skill-name>/SKILL.md`
+
+### Recommended cross-compatible path
+
+Use `~/.claude/skills/mikrotik/SKILL.md` so both OpenCode and Claude sessions can discover it.
+
+Install globally from a repo checkout:
+
+```bash
+mkdir -p ~/.claude/skills/mikrotik
+cp .opencode/skills/mikrotik/SKILL.md ~/.claude/skills/mikrotik/SKILL.md
+```
+
+> [!TIP]
+> Export `MIKROTIK_*` before launching OpenCode/Claude, then restart the app/session after changing env values.
+
+## MCP Client Examples
+
+### Claude Desktop
 
 ```json
 {
   "mcpServers": {
     "mikrotik": {
-      "command": "python",
-      "args": ["-m", "mikrotik_mcp.server"],
+      "command": "mikrotik-mcp",
       "env": {
         "MIKROTIK_HOST": "192.168.88.1",
         "MIKROTIK_USERNAME": "admin",
-        "MIKROTIK_PASSWORD": "yourpassword"
+        "MIKROTIK_PASSWORD": "yourpassword",
+        "MIKROTIK_PORT": "80"
       }
     }
   }
 }
 ```
 
-## Configuration
+### OpenCode
 
-All settings are configured through environment variables (or a `.env` file):
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MIKROTIK_HOST` | Router IP or hostname | *(required)* |
-| `MIKROTIK_USERNAME` | API username | `admin` |
-| `MIKROTIK_PASSWORD` | API password | *(required)* |
-| `MIKROTIK_PORT` | REST API port | `80` |
-| `MIKROTIK_USE_SSL` | Enable HTTPS | `false` |
-| `MIKROTIK_SSL_VERIFY` | Verify SSL certificate | `false` |
-| `MIKROTIK__MCP__TRANSPORT` | MCP transport: `stdio`, `sse`, `streamable-http` | `stdio` |
-| `MIKROTIK__MCP__HOST` | Server bind address (non-stdio) | `0.0.0.0` |
-| `MIKROTIK__MCP__PORT` | Server port (non-stdio) | `8000` |
-
-> [!TIP]
-> Copy `.env.example` to `.env` and edit it to get started quickly. Note that the REST API uses port **80** (HTTP) or **443** (HTTPS) — not the legacy API port 8728.
-
-### Running with SSE transport
-
-```bash
-MIKROTIK__MCP__TRANSPORT=sse python -m mikrotik_mcp.server
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "mikrotik": {
+      "type": "local",
+      "command": ["mikrotik-mcp"],
+      "environment": {
+        "MIKROTIK_HOST": "192.168.88.1",
+        "MIKROTIK_USERNAME": "admin",
+        "MIKROTIK_PASSWORD": "yourpassword",
+        "MIKROTIK_PORT": "80"
+      }
+    }
+  }
+}
 ```
-
-## Features
-
-### IP Management
-- **IP Addresses** — List, get, add, update, remove, enable/disable addresses on interfaces
-- **Routing** — Full route table management, path checking, blackhole routes, cache control, statistics
-- **IP Pools** — Create and manage address pools, view used addresses
-
-### DNS
-- **Server Config** — Get/set DNS servers, DoH configuration, cache management
-- **Static Entries** — Full CRUD for A, AAAA, CNAME, and regexp DNS records
-
-### Firewall
-- **Filter Rules** — Complete rule management with ordering, enable/disable, and a basic setup wizard
-- **NAT Rules** — Source and destination NAT with full CRUD and rule ordering
-- **Address Lists** — Manage address lists with optional timeout entries
-
-### Interfaces
-- **VLAN** — Create and manage VLAN interfaces on any parent interface
-- **Wireless** — Manage wireless interfaces, scan for networks, view connected clients
-- **WireGuard** — Full VPN management for both interfaces and peers
-
-### DHCP
-- **Servers** — Create and manage DHCP server instances
-- **Leases** — View and manage dynamic/static lease reservations
-- **Pools** — Configure address pools for DHCP distribution
-
-### System
-- **Users** — User and group management with policy control, view active sessions
-- **Backups** — Create, list, download, upload, and restore system backups
-- **Logs** — Query logs by severity, topic, or free-text search
 
 ## Architecture
 
-```
-src/mikrotik_mcp/
-├── server.py         # Entry point — transport selection
-├── app.py            # FastMCP instance + connection lifespan
-├── config.py         # Pydantic settings (env vars)
-├── connection.py     # Async HTTP client (httpx)
-├── exceptions.py     # Error hierarchy
-└── tools/            # 17 domain modules
-    ├── ip_address.py
-    ├── ip_route.py
-    ├── ip_pool.py
-    ├── dns.py
-    ├── dns_static.py
-    ├── firewall_filter.py
-    ├── firewall_nat.py
-    ├── firewall_address_list.py
-    ├── interface_vlan.py
-    ├── interface_wireless.py
-    ├── interface_wireguard.py
-    ├── system_users.py
-    ├── system_backup.py
-    ├── system_logs.py
-    ├── dhcp_server.py
-    ├── dhcp_lease.py
-    └── dhcp_pool.py
+```text
+server.py -> app.py -> FastMCP(lifespan)
+                    -> tools.register_tools()
+                    -> MikrotikConnectionManager
+                    -> RouterOS REST API (/rest/...)
 ```
 
-The server communicates with RouterOS through its REST API (`/rest/...`) using async HTTP via [httpx](https://www.python-httpx.org/). Each tool module is self-contained and registers its tools with the FastMCP instance on startup. Connection lifecycle is managed through FastMCP's lifespan context — a single authenticated `httpx.AsyncClient` is shared across all tool invocations.
+- `src/mikrotik_mcp/server.py`: entrypoint + transport selection
+- `src/mikrotik_mcp/app.py`: FastMCP app + lifecycle wiring
+- `src/mikrotik_mcp/connection.py`: async HTTP client and request handling
+- `src/mikrotik_mcp/tools/`: domain tool modules
 
-## Security
+## Troubleshooting
 
-> [!IMPORTANT]
-> The MCP server has full access to your MikroTik device through the REST API. Follow these practices to minimize risk.
+### `MCP error -32000: Connection closed`
 
-- **Use HTTPS in production** — Set `MIKROTIK_USE_SSL=true` and `MIKROTIK_PORT=443`
-- **Create a dedicated API user** with only the permissions your use case requires
-- **Restrict API access by IP** using MikroTik firewall rules
-- **Never commit credentials** — Use environment variables or `.env` files (already in `.gitignore`)
-- **Self-signed certificates** — Set `MIKROTIK_SSL_VERIFY=false` if your router uses a self-signed cert
+This usually means server startup failed early or env vars were missing in the spawned process.
 
-## Development
+Check raw startup error:
 
 ```bash
-# Enter dev environment (Nix)
-nix-shell
-
-# Or manually
-pip install -e .
-
-# Run the server
-python -m mikrotik_mcp.server
-
-# Test with MCP Inspector
-npx @modelcontextprotocol/inspector python -m mikrotik_mcp.server
+mikrotik-mcp 2>&1
 ```
+
+If you use OpenCode `skill_mcp`, ensure `MIKROTIK_*` are set in skill/client config or exported before app startup.
+
+### Validate connectivity quickly
+
+```bash
+export MIKROTIK_HOST=192.168.88.1
+export MIKROTIK_USERNAME=admin
+export MIKROTIK_PASSWORD=yourpassword
+curl -u "$MIKROTIK_USERNAME:$MIKROTIK_PASSWORD" "http://$MIKROTIK_HOST/rest/system/resource"
+```
+
+If you use HTTPS, switch the URL to `https://` and apply your TLS verification settings.
+
+## Security Notes
+
+> [!IMPORTANT]
+> This server can modify live network configuration.
+
+- Use a dedicated RouterOS user with minimum required permissions.
+- Prefer HTTPS (`MIKROTIK_USE_SSL=true`, `MIKROTIK_PORT=443`) in production.
+- Restrict RouterOS REST access by source IP/firewall rules.
+- Never commit secrets.
