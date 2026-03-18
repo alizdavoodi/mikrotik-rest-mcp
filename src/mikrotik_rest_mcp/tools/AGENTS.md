@@ -1,11 +1,12 @@
 # TOOLS — DOMAIN MODULES
 
-17 self-contained tool modules. Each wraps a RouterOS REST API section as MCP tools.
+17 self-contained tool modules, 122 tools total. Each wraps a RouterOS REST API section as MCP tools.
 
 ## ADDING A NEW MODULE
 
 1. Create `tools/<domain>.py` with a `register(mcp: FastMCP)` function
 2. Import + call in `tools/__init__.py::register_tools()`
+3. Add tests in `tests/test_tools/test_<domain>.py` using `conftest.py` fixtures
 
 ### Template (copy-paste starter)
 
@@ -80,6 +81,7 @@ def register(mcp: FastMCP) -> None:
 - **`model_dump(exclude_none=True)`**: Strips unset fields before sending to API
 - **Not found → `ValueError`**: NOT `NotFoundError` from exceptions.py
 - **Return shape**: `{"<verb>ed": True, "id": ...}` for mutations; raw dict/list for reads
+- **`or []` on GET**: Always `await manager.get("path") or []` — handles 404 returning `None`
 
 ## DOMAIN MAP
 
@@ -106,13 +108,28 @@ def register(mcp: FastMCP) -> None:
 
 ## PATTERNS BY COMPLEXITY
 
-**Simple** (ip_address, interface_vlan, dhcp_lease): Straight CRUD, no translation needed.
+**Simple** (ip_address, interface_vlan, dhcp_lease, dhcp_server, dhcp_pool, dns_static, firewall_address_list): Straight CRUD, no translation needed. Optional `_filter_rows()` helper for client-side filtering.
 
 **With translation** (firewall_filter, firewall_nat, system_logging): Have `_translate()` to convert `src_address` → `src-address`. Also convert `bool` → `"true"/"false"` string. Copy the `_translate()` function if adding firewall-adjacent modules.
 
-**With sub-resources** (interface_wireguard, system_backup, ip_route, system_logging): Multiple REST paths in one module. WireGuard manages both `interface/wireguard` and `interface/wireguard/peers`. `system_logging` manages both `system/logging` (rules) and `system/logging/action` (actions).
+**With manual kebab conversion** (dns, interface_wireguard, ip_route): Inline `payload.pop("snake_key")` → `payload["kebab-key"]` without a shared `_translate()`. Used when only 2-3 fields need conversion.
 
-**With special operations** (ip_route, system_logs): Non-CRUD operations like cache flush (`DELETE ip/route/cache`), route path check (`POST`), log search (client-side filtering).
+**With sub-resources** (interface_wireguard, system_backup, ip_route, system_logging, system_users, ip_pool, interface_wireless): Multiple REST paths in one module. WireGuard manages both `interface/wireguard` and `interface/wireguard/peers`. `system_logging` manages both `system/logging` (rules) and `system/logging/action` (actions). Each sub-resource gets separate Pydantic models.
+
+**With special operations** (ip_route, system_logs, system_backup): Non-CRUD operations like cache flush (`DELETE ip/route/cache`), route path check (`POST`), log search (client-side filtering), file upload/download, backup restore.
+
+## TESTING
+
+Tests live in `tests/test_tools/test_<domain>.py`. Currently only `test_ip_address.py` (13 tests) and `test_firewall_filter.py` (17 tests) exist.
+
+**Mock pattern** (from `conftest.py`):
+```python
+@pytest.mark.asyncio
+async def test_list_entities(mock_context):
+    mock_context.lifespan_context["connection_manager"].get.return_value = [{"id": "*1"}]
+    result = await list_entities(ctx=mock_context)
+    assert len(result) == 1
+```
 
 ## ANTI-PATTERNS
 
@@ -120,3 +137,4 @@ def register(mcp: FastMCP) -> None:
 - **No shared base class for tools** — each module is fully standalone
 - **No query-param filtering** — RouterOS REST API doesn't support it; all filtering is client-side via `_filter_rows()`
 - **Never send Python `True`/`False` to RouterOS** — must be string `"true"`/`"false"`
+- **Never use `model_dump()` without `exclude_none=True`** — sends None values to RouterOS

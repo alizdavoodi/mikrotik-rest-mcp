@@ -36,6 +36,26 @@ This server wraps RouterOS REST endpoints (`/rest/...`) and exposes them as type
 - [uv](https://docs.astral.sh/uv/) (recommended) or any PEP 517 installer
 - MikroTik RouterOS v7.1+ with REST API reachable
 
+### OpenCode Skill (recommended)
+
+This repo ships a project-local OpenCode skill:
+
+- `.opencode/skills/mikrotik/SKILL.md`
+
+Why this is the best default in OpenCode:
+
+- `mikrotik-rest-mcp` has a large tool set, which can inflate context if always loaded globally.
+- Skill-first workflow activates the MCP tool surface only when needed.
+- Skill config explicitly passes `MIKROTIK_*` into the spawned MCP process.
+
+Usage:
+
+```text
+skill(name="mikrotik")
+skill_mcp(mcp_name="mikrotik", tool_name="mikrotik_list_ip_addresses")
+skill_mcp(mcp_name="mikrotik", tool_name="mikrotik_get_dns_settings")
+```
+
 ### Install
 
 Run without installing (recommended):
@@ -116,26 +136,6 @@ Registered domains include:
 - **System**: users, backups, logs, logging rules/actions
 
 Tool naming convention follows `mikrotik_<verb>_<resource>`.
-
-## OpenCode Skill (recommended)
-
-This repo ships a project-local OpenCode skill:
-
-- `.opencode/skills/mikrotik/SKILL.md`
-
-Why this is the best default in OpenCode:
-
-- `mikrotik-rest-mcp` has a large tool set, which can inflate context if always loaded globally.
-- Skill-first workflow activates the MCP tool surface only when needed.
-- Skill config explicitly passes `MIKROTIK_*` into the spawned MCP process.
-
-Usage:
-
-```text
-skill(name="mikrotik")
-skill_mcp(mcp_name="mikrotik", tool_name="mikrotik_list_ip_addresses")
-skill_mcp(mcp_name="mikrotik", tool_name="mikrotik_get_dns_settings")
-```
 
 ## Global Skill Setup (all sessions)
 
