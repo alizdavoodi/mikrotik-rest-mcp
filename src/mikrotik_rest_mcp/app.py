@@ -25,6 +25,6 @@ async def lifespan(_: FastMCP) -> AsyncIterator[dict[str, Any]]:
         await manager.disconnect()
 
 
-mcp = FastMCP("mikrotik-mcp", lifespan=lifespan)
+mcp = FastMCP("mikrotik-rest-mcp", lifespan=lifespan)
 
 register_tools(mcp)

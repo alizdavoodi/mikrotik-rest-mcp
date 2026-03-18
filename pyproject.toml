@@ -1,5 +1,5 @@
 [project]
-name = "mikrotik-mcp"
+name = "mikrotik-rest-mcp"
 version = "0.1.0"
 description = "FastMCP server for MikroTik RouterOS management"
 readme = "README.md"
@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.scripts]
-mikrotik-mcp = "mikrotik_mcp.server:main"
+mikrotik-rest-mcp = "mikrotik_rest_mcp.server:main"
 
 [project.optional-dependencies]
 dev = [
@@ -35,9 +35,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/alirezadavoodi/mikrotik-api-mcp"
-Repository = "https://github.com/alirezadavoodi/mikrotik-api-mcp"
-Issues = "https://github.com/alirezadavoodi/mikrotik-api-mcp/issues"
+Homepage = "https://github.com/alirezadavoodi/mikrotik-rest-mcp"
+Repository = "https://github.com/alirezadavoodi/mikrotik-rest-mcp"
+Issues = "https://github.com/alirezadavoodi/mikrotik-rest-mcp/issues"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

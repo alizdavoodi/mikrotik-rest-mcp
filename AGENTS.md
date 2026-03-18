@@ -10,8 +10,8 @@ FastMCP server exposing MikroTik RouterOS REST API (v7.1+) as MCP tools. Python 
 ## STRUCTURE
 
 ```
-mikrotik-api-mcp/
-├── src/mikrotik_mcp/
+mikrotik-rest-mcp/
+├── src/mikrotik_rest_mcp/
 │   ├── server.py        # Entry point — transport selection (stdio/sse/streamable-http)
 │   ├── app.py           # FastMCP instance + lifespan (connection lifecycle)
 │   ├── config.py        # Pydantic BaseSettings — env vars MIKROTIK_* prefix
@@ -80,11 +80,11 @@ server.py → app.py → FastMCP(lifespan=...) → tools/__init__.py::register_t
 nix-shell                              # Enter dev env (auto-creates venv, installs deps)
 
 # Run server
-python -m mikrotik_mcp.server          # stdio transport (default)
-MIKROTIK__MCP__TRANSPORT=sse python -m mikrotik_mcp.server  # SSE transport
+python -m mikrotik_rest_mcp.server          # stdio transport (default)
+MIKROTIK__MCP__TRANSPORT=sse python -m mikrotik_rest_mcp.server  # SSE transport
 
 # Test with MCP Inspector
-npx @modelcontextprotocol/inspector python -m mikrotik_mcp.server
+npx @modelcontextprotocol/inspector python -m mikrotik_rest_mcp.server
 
 # Required env vars
 export MIKROTIK_HOST=192.168.88.1
@@ -97,6 +97,6 @@ export MIKROTIK_PASSWORD=yourpassword
 - **No tests yet** — README mentions pytest/mypy but no test infrastructure exists
 - **No CI/CD** — No GitHub Actions, no Makefile
 - **No dev deps defined** — pyproject.toml lacks `[project.optional-dependencies]`
-- **No `[project.scripts]`** — `mikrotik-mcp` CLI command not wired in pyproject.toml
+- **No `[project.scripts]`** — `mikrotik-rest-mcp` CLI command not wired in pyproject.toml
 - **Port mismatch**: `.env.example` shows port 8728 (old API) but code defaults to 80 (REST API)
 - **Config caching**: `get_settings()` uses `@lru_cache(maxsize=1)` — singleton per process

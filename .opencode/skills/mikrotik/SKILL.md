@@ -1,9 +1,9 @@
 ---
 name: mikrotik
-description: Manage MikroTik RouterOS devices via the mikrotik-mcp server using skill_mcp to keep tool context lean.
+description: Manage MikroTik RouterOS devices via the mikrotik-rest-mcp server using skill_mcp to keep tool context lean.
 mcp:
   mikrotik:
-    command: mikrotik-mcp
+    command: uvx mikrotik-rest-mcp
     env:
       MIKROTIK_HOST: ${MIKROTIK_HOST}
       MIKROTIK_USERNAME: ${MIKROTIK_USERNAME}

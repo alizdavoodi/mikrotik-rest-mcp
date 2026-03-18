@@ -84,8 +84,8 @@
         in
         {
           default = mkApplication {
-            venv = pythonSet.mkVirtualEnv "mikrotik-mcp-env" workspace.deps.default;
-            package = pythonSet.mikrotik-mcp;
+            venv = pythonSet.mkVirtualEnv "mikrotik-rest-mcp-env" workspace.deps.default;
+            package = pythonSet.mikrotik-rest-mcp;
           };
         }
       );
@@ -99,7 +99,7 @@
 
           # Apply editable overlay on top for live code reloading
           editablePythonSet = pythonSet.overrideScope editableOverlay;
-          virtualenv = editablePythonSet.mkVirtualEnv "mikrotik-mcp-dev-env" workspace.deps.all;
+          virtualenv = editablePythonSet.mkVirtualEnv "mikrotik-rest-mcp-dev-env" workspace.deps.all;
         in
         {
           default = pkgs.mkShell {

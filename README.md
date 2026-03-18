@@ -3,7 +3,7 @@
 
 # MikroTik MCP Server
 
-*FastMCP server that exposes MikroTik RouterOS REST API as MCP tools*
+_FastMCP server that exposes MikroTik RouterOS REST API as MCP tools_
 
 [![Python](https://img.shields.io/badge/Python->=3.11-3776ab?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
 [![RouterOS](https://img.shields.io/badge/RouterOS-v7.1+-e4182c?style=flat-square)](https://mikrotik.com)
@@ -33,20 +33,27 @@ This server wraps RouterOS REST endpoints (`/rest/...`) and exposes them as type
 ### Prerequisites
 
 - Python 3.11+
+- [uv](https://docs.astral.sh/uv/) (recommended) or any PEP 517 installer
 - MikroTik RouterOS v7.1+ with REST API reachable
 
 ### Install
 
-Package users:
+Run without installing (recommended):
 
 ```bash
-pip install mikrotik-mcp
+uvx mikrotik-rest-mcp
+```
+
+Install into current environment:
+
+```bash
+uv pip install mikrotik-rest-mcp
 ```
 
 From source (contributors):
 
 ```bash
-pip install -e .
+uv sync --dev
 ```
 
 If you prefer Nix for development:
@@ -63,38 +70,38 @@ export MIKROTIK_USERNAME=admin
 export MIKROTIK_PASSWORD=yourpassword
 export MIKROTIK_PORT=80
 
-mikrotik-mcp
+uvx mikrotik-rest-mcp
 ```
 
 Test with MCP Inspector:
 
 ```bash
-npx @modelcontextprotocol/inspector mikrotik-mcp
+npx @modelcontextprotocol/inspector uvx mikrotik-rest-mcp
 ```
 
 ## Configuration
 
 All settings are read from process environment variables.
 
-| Variable | Description | Default |
-|---|---|---|
-| `MIKROTIK_HOST` | Router IP or hostname | *(required)* |
-| `MIKROTIK_USERNAME` | Router username | `admin` |
-| `MIKROTIK_PASSWORD` | Router password | *(required)* |
-| `MIKROTIK_PORT` | RouterOS REST API port | `80` |
-| `MIKROTIK_USE_SSL` | Use HTTPS | `false` |
-| `MIKROTIK_SSL_VERIFY` | Verify TLS certificate | `false` |
-| `MIKROTIK__MCP__TRANSPORT` | MCP transport: `stdio`, `sse`, `streamable-http` | `stdio` |
-| `MIKROTIK__MCP__HOST` | Bind host for non-stdio transports | `0.0.0.0` |
-| `MIKROTIK__MCP__PORT` | Bind port for non-stdio transports | `8000` |
+| Variable                   | Description                                      | Default      |
+| -------------------------- | ------------------------------------------------ | ------------ |
+| `MIKROTIK_HOST`            | Router IP or hostname                            | _(required)_ |
+| `MIKROTIK_USERNAME`        | Router username                                  | `admin`      |
+| `MIKROTIK_PASSWORD`        | Router password                                  | _(required)_ |
+| `MIKROTIK_PORT`            | RouterOS REST API port                           | `80`         |
+| `MIKROTIK_USE_SSL`         | Use HTTPS                                        | `false`      |
+| `MIKROTIK_SSL_VERIFY`      | Verify TLS certificate                           | `false`      |
+| `MIKROTIK__MCP__TRANSPORT` | MCP transport: `stdio`, `sse`, `streamable-http` | `stdio`      |
+| `MIKROTIK__MCP__HOST`      | Bind host for non-stdio transports               | `0.0.0.0`    |
+| `MIKROTIK__MCP__PORT`      | Bind port for non-stdio transports               | `8000`       |
 
 > [!IMPORTANT]
-> `mikrotik-mcp` reads **process env**. It does not auto-load `.env`. In MCP clients, prefer setting variables in the client's `env` / `environment` block.
+> `mikrotik-rest-mcp` reads **process env**. It does not auto-load `.env`. In MCP clients, prefer setting variables in the client's `env` / `environment` block.
 
 SSE example:
 
 ```bash
-MIKROTIK__MCP__TRANSPORT=sse mikrotik-mcp
+MIKROTIK__MCP__TRANSPORT=sse uvx mikrotik-rest-mcp
 ```
 
 ## Tool Coverage
@@ -118,7 +125,7 @@ This repo ships a project-local OpenCode skill:
 
 Why this is the best default in OpenCode:
 
-- `mikrotik-mcp` has a large tool set, which can inflate context if always loaded globally.
+- `mikrotik-rest-mcp` has a large tool set, which can inflate context if always loaded globally.
 - Skill-first workflow activates the MCP tool surface only when needed.
 - Skill config explicitly passes `MIKROTIK_*` into the spawned MCP process.
 
@@ -166,7 +173,8 @@ cp .opencode/skills/mikrotik/SKILL.md ~/.claude/skills/mikrotik/SKILL.md
 {
   "mcpServers": {
     "mikrotik": {
-      "command": "mikrotik-mcp",
+      "command": "uvx",
+      "args": ["mikrotik-rest-mcp"],
       "env": {
         "MIKROTIK_HOST": "192.168.88.1",
         "MIKROTIK_USERNAME": "admin",
@@ -186,7 +194,7 @@ cp .opencode/skills/mikrotik/SKILL.md ~/.claude/skills/mikrotik/SKILL.md
   "mcp": {
     "mikrotik": {
       "type": "local",
-      "command": ["mikrotik-mcp"],
+      "command": ["uvx", "mikrotik-rest-mcp"],
       "environment": {
         "MIKROTIK_HOST": "192.168.88.1",
         "MIKROTIK_USERNAME": "admin",
@@ -207,10 +215,10 @@ server.py -> app.py -> FastMCP(lifespan)
                     -> RouterOS REST API (/rest/...)
 ```
 
-- `src/mikrotik_mcp/server.py`: entrypoint + transport selection
-- `src/mikrotik_mcp/app.py`: FastMCP app + lifecycle wiring
-- `src/mikrotik_mcp/connection.py`: async HTTP client and request handling
-- `src/mikrotik_mcp/tools/`: domain tool modules
+- `src/mikrotik_rest_mcp/server.py`: entrypoint + transport selection
+- `src/mikrotik_rest_mcp/app.py`: FastMCP app + lifecycle wiring
+- `src/mikrotik_rest_mcp/connection.py`: async HTTP client and request handling
+- `src/mikrotik_rest_mcp/tools/`: domain tool modules
 
 ## Troubleshooting
 
@@ -221,7 +229,7 @@ This usually means server startup failed early or env vars were missing in the s
 Check raw startup error:
 
 ```bash
-mikrotik-mcp 2>&1
+uvx mikrotik-rest-mcp 2>&1
 ```
 
 If you use OpenCode `skill_mcp`, ensure `MIKROTIK_*` are set in skill/client config or exported before app startup.

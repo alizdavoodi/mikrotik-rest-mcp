@@ -780,7 +780,7 @@ wheels = [
 ]
 
 [[package]]
-name = "mikrotik-mcp"
+name = "mikrotik-rest-mcp"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
