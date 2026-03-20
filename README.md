@@ -44,6 +44,12 @@ Run without installing (recommended):
 uvx mikrotik-rest-mcp
 ```
 
+Or with Nix (no Python required):
+
+```bash
+nix run github:alizdavoodi/mikrotik-rest-mcp
+```
+
 Install into current environment:
 
 ```bash
@@ -70,7 +76,11 @@ export MIKROTIK_USERNAME=admin
 export MIKROTIK_PASSWORD=yourpassword
 export MIKROTIK_PORT=80
 
+# with uv
 uvx mikrotik-rest-mcp
+
+# with nix
+nix run github:alizdavoodi/mikrotik-rest-mcp
 ```
 
 Test with MCP Inspector:
@@ -150,6 +160,25 @@ Add to your project-level `.mcp.json` (recommended) or global `~/.claude/setting
 }
 ```
 
+With Nix:
+
+```json
+{
+  "mcpServers": {
+    "mikrotik": {
+      "command": "nix",
+      "args": ["run", "github:alizdavoodi/mikrotik-rest-mcp"],
+      "env": {
+        "MIKROTIK_HOST": "192.168.88.1",
+        "MIKROTIK_USERNAME": "admin",
+        "MIKROTIK_PASSWORD": "yourpassword",
+        "MIKROTIK_PORT": "80"
+      }
+    }
+  }
+}
+```
+
 > [!TIP]
 > Enable tool search to avoid loading 100+ tool definitions into context:
 >
@@ -179,6 +208,25 @@ Add to your Claude Desktop config (`claude_desktop_config.json`):
 }
 ```
 
+With Nix:
+
+```json
+{
+  "mcpServers": {
+    "mikrotik": {
+      "command": "nix",
+      "args": ["run", "github:alizdavoodi/mikrotik-rest-mcp"],
+      "env": {
+        "MIKROTIK_HOST": "192.168.88.1",
+        "MIKROTIK_USERNAME": "admin",
+        "MIKROTIK_PASSWORD": "yourpassword",
+        "MIKROTIK_PORT": "80"
+      }
+    }
+  }
+}
+```
+
 ### OpenCode
 
 Add to your OpenCode config (`opencode.json`):
@@ -190,6 +238,26 @@ Add to your OpenCode config (`opencode.json`):
     "mikrotik": {
       "type": "local",
       "command": ["uvx", "mikrotik-rest-mcp"],
+      "environment": {
+        "MIKROTIK_HOST": "192.168.88.1",
+        "MIKROTIK_USERNAME": "admin",
+        "MIKROTIK_PASSWORD": "yourpassword",
+        "MIKROTIK_PORT": "80"
+      }
+    }
+  }
+}
+```
+
+With Nix:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "mikrotik": {
+      "type": "local",
+      "command": ["nix", "run", "github:alizdavoodi/mikrotik-rest-mcp"],
       "environment": {
         "MIKROTIK_HOST": "192.168.88.1",
         "MIKROTIK_USERNAME": "admin",
