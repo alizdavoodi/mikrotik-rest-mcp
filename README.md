@@ -10,14 +10,14 @@ _FastMCP server that exposes MikroTik RouterOS REST API as MCP tools_
 [![FastMCP](https://img.shields.io/badge/FastMCP->=3.1-6f42c1?style=flat-square)](https://github.com/jlowin/fastmcp)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-[Overview](#overview) • [Get Started](#get-started) • [Configuration](#configuration) • [OpenCode Skill](#opencode-skill-recommended) • [Troubleshooting](#troubleshooting)
+[Overview](#overview) • [Get Started](#get-started) • [Configuration](#configuration) • [MCP Client Setup](#mcp-client-setup) • [Troubleshooting](#troubleshooting)
 
 </div>
 
-Manage MikroTik devices from any MCP-compatible client (Claude Desktop, OpenCode, or custom MCP clients) using a single server package.
+Manage MikroTik devices from any MCP-compatible client (Claude Code, Claude Desktop, OpenCode, or custom MCP clients) using a single server package.
 
 > [!NOTE]
-> This project exposes **100+ tools** across IP, firewall, DNS, DHCP, interfaces, and system domains. For OpenCode, skill-first usage is recommended to avoid loading a very large tool surface into context by default.
+> This server exposes **100+ tools** across IP, firewall, DNS, DHCP, interfaces, and system domains. This large tool surface can consume significant context window space. See [Context Window Considerations](#context-window-considerations) for recommendations.
 
 ## Overview
 
@@ -35,26 +35,6 @@ This server wraps RouterOS REST endpoints (`/rest/...`) and exposes them as type
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/) (recommended) or any PEP 517 installer
 - MikroTik RouterOS v7.1+ with REST API reachable
-
-### OpenCode Skill (recommended)
-
-This repo ships a project-local OpenCode skill:
-
-- `.opencode/skills/mikrotik/SKILL.md`
-
-Why this is the best default in OpenCode:
-
-- `mikrotik-rest-mcp` has a large tool set, which can inflate context if always loaded globally.
-- Skill-first workflow activates the MCP tool surface only when needed.
-- Skill config explicitly passes `MIKROTIK_*` into the spawned MCP process.
-
-Usage:
-
-```text
-skill(name="mikrotik")
-skill_mcp(mcp_name="mikrotik", tool_name="mikrotik_list_ip_addresses")
-skill_mcp(mcp_name="mikrotik", tool_name="mikrotik_get_dns_settings")
-```
 
 ### Install
 
@@ -137,37 +117,50 @@ Registered domains include:
 
 Tool naming convention follows `mikrotik_<verb>_<resource>`.
 
-## Global Skill Setup (all sessions)
+## MCP Client Setup
 
-If you want this skill available in every session (not just this repo), install it globally.
+### Context Window Considerations
 
-### OpenCode global paths
+This server registers **100+ tools**. When an MCP client loads all tool definitions into context at startup, this can consume a substantial portion of the available context window — leaving less room for conversation and reasoning.
 
-- `~/.config/opencode/skills/<skill-name>/SKILL.md` (OpenCode native)
-- `~/.claude/skills/<skill-name>/SKILL.md` (Claude-compatible path often used with OpenCode setups)
-- `~/.agents/skills/<skill-name>/SKILL.md` (Agent Skills compatibility path)
+**Recommendations:**
 
-### Claude Code global path
+- **Use lazy-loading / tool search if your client supports it.** This defers tool definition loading until a tool is actually needed, keeping context lean.
+- **Claude Code** supports this via [MCP tool search](https://docs.anthropic.com/en/docs/claude-code/settings#tool-search). Enable it by setting `CLAUDE_MCP_TOOL_SEARCH=true` in your environment before launching Claude Code. This is the **recommended** approach when using Claude Code with this server.
+- If your client does not support lazy loading, consider whether you need all domains active. You can still use the server — just be aware of the context cost.
 
-- `~/.claude/skills/<skill-name>/SKILL.md`
+### Claude Code
 
-### Recommended cross-compatible path
+Add to your project-level `.mcp.json` (recommended) or global `~/.claude/settings.json`:
 
-Use `~/.claude/skills/mikrotik/SKILL.md` so both OpenCode and Claude sessions can discover it.
-
-Install globally from a repo checkout:
-
-```bash
-mkdir -p ~/.claude/skills/mikrotik
-cp .opencode/skills/mikrotik/SKILL.md ~/.claude/skills/mikrotik/SKILL.md
+```json
+{
+  "mcpServers": {
+    "mikrotik": {
+      "command": "uvx",
+      "args": ["mikrotik-rest-mcp"],
+      "env": {
+        "MIKROTIK_HOST": "192.168.88.1",
+        "MIKROTIK_USERNAME": "admin",
+        "MIKROTIK_PASSWORD": "yourpassword",
+        "MIKROTIK_PORT": "80"
+      }
+    }
+  }
+}
 ```
 
 > [!TIP]
-> Export `MIKROTIK_*` before launching OpenCode/Claude, then restart the app/session after changing env values.
-
-## MCP Client Examples
+> Enable tool search to avoid loading 100+ tool definitions into context:
+>
+> ```bash
+> export CLAUDE_MCP_TOOL_SEARCH=true
+> claude
+> ```
 
 ### Claude Desktop
+
+Add to your Claude Desktop config (`claude_desktop_config.json`):
 
 ```json
 {
@@ -187,6 +180,8 @@ cp .opencode/skills/mikrotik/SKILL.md ~/.claude/skills/mikrotik/SKILL.md
 ```
 
 ### OpenCode
+
+Add to your OpenCode config (`opencode.json`):
 
 ```json
 {
@@ -232,7 +227,7 @@ Check raw startup error:
 uvx mikrotik-rest-mcp 2>&1
 ```
 
-If you use OpenCode `skill_mcp`, ensure `MIKROTIK_*` are set in skill/client config or exported before app startup.
+Ensure `MIKROTIK_*` variables are set in your client's env/environment config block, or exported before launching the client.
 
 ### Validate connectivity quickly
 
