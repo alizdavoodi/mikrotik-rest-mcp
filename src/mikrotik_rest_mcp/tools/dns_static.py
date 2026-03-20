@@ -65,7 +65,7 @@ def register(mcp: FastMCP) -> None:
         """Gets details of a specific static DNS entry."""
         manager = get_manager(ctx)
         result = await manager.get(f"ip/dns/static/{entry_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"DNS static entry not found: {entry_id}")
         return result
 

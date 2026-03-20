@@ -141,7 +141,7 @@ def register(mcp: FastMCP) -> None:
         """Gets detailed information about a specific firewall filter rule."""
         manager = get_manager(ctx)
         result = await manager.get(f"ip/firewall/filter/{rule_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"Filter rule not found: {rule_id}")
         return result
 

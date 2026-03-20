@@ -55,7 +55,12 @@ def register(mcp: FastMCP) -> None:
     async def get_user(name: str, ctx: Context = CurrentContext()) -> dict[str, Any]:
         """Gets detailed information about a specific user."""
         manager = get_manager(ctx)
-        rows = await manager.get("user") or []
+        rows_raw = await manager.get("user")
+        rows = (
+            [row for row in rows_raw if isinstance(row, dict)]
+            if isinstance(rows_raw, list)
+            else []
+        )
         for user in rows:
             if user.get("name") == name:
                 return user
@@ -83,7 +88,7 @@ def register(mcp: FastMCP) -> None:
             payload["address"] = address
         if comment:
             payload["comment"] = comment
-        result = await manager.put("user", json=payload)
+        await manager.put("user", json=payload)
         return {"added": True, "name": name}
 
     @mcp.tool(name="mikrotik_update_user", annotations=WRITE)
@@ -196,7 +201,12 @@ def register(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """Gets detailed information about a specific user group."""
         manager = get_manager(ctx)
-        rows = await manager.get("user/group") or []
+        rows_raw = await manager.get("user/group")
+        rows = (
+            [row for row in rows_raw if isinstance(row, dict)]
+            if isinstance(rows_raw, list)
+            else []
+        )
         for group in rows:
             if group.get("name") == name:
                 return group
@@ -214,7 +224,7 @@ def register(mcp: FastMCP) -> None:
         payload: dict[str, Any] = {"name": name, "policy": ",".join(policy)}
         if comment:
             payload["comment"] = comment
-        result = await manager.put("user/group", json=payload)
+        await manager.put("user/group", json=payload)
         return {"added": True, "name": name}
 
     @mcp.tool(name="mikrotik_remove_user_group", annotations=DESTRUCTIVE)

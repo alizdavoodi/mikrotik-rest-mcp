@@ -47,7 +47,7 @@ def register(mcp: FastMCP) -> None:
         """Gets one firewall address-list entry."""
         manager = get_manager(ctx)
         result = await manager.get(f"ip/firewall/address-list/{entry_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"Address-list entry not found: {entry_id}")
         return result
 

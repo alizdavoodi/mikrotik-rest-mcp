@@ -50,7 +50,12 @@ def register(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """Get one DHCP server by name."""
         manager = get_manager(ctx)
-        rows = await manager.get("ip/dhcp-server", params={"name": name}) or []
+        rows_raw = await manager.get("ip/dhcp-server", params={"name": name})
+        rows = (
+            [row for row in rows_raw if isinstance(row, dict)]
+            if isinstance(rows_raw, list)
+            else []
+        )
         if not rows:
             raise ValueError(f"DHCP server not found: {name}")
         return rows[0]

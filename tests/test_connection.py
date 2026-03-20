@@ -223,10 +223,14 @@ class TestMikrotikConnectionManager:
     async def test_ensure_connects_if_needed(
         self, mock_settings: MikrotikConfig, mock_httpx_client: AsyncMock
     ) -> None:
-        manager = MikrotikConnectionManager(mock_settings)
-
         manager2 = MikrotikConnectionManager(mock_settings)
         await manager2.connect()
+        mock_response = MagicMock(spec=httpx.Response)
+        mock_response.status_code = 200
+        mock_response.content = b"[]"
+        mock_response.json.return_value = []
+        mock_response.raise_for_status = MagicMock()
+        mock_httpx_client.request.return_value = mock_response
         manager2._client = mock_httpx_client
 
         await manager2.get("ip/address")

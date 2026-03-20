@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
-import pytest
-
 from mikrotik_rest_mcp.tools.firewall_filter import (
     FirewallFilterCreate,
     FirewallFilterUpdate,

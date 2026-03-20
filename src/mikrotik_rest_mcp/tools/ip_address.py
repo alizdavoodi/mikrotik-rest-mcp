@@ -83,7 +83,7 @@ def register(mcp: FastMCP) -> None:
         """Gets detailed information about a specific IP address."""
         manager = get_manager(ctx)
         result = await manager.get(f"ip/address/{address_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"IP address entry not found: {address_id}")
         return result
 

@@ -126,7 +126,7 @@ def register(mcp: FastMCP) -> None:
         """Gets detailed information about a specific NAT rule."""
         manager = get_manager(ctx)
         result = await manager.get(f"ip/firewall/nat/{rule_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"NAT rule not found: {rule_id}")
         return result
 

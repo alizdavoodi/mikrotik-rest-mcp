@@ -148,7 +148,7 @@ def register(mcp: FastMCP) -> None:
         """Gets detailed information about a specific route."""
         manager = get_manager(ctx)
         result = await manager.get(f"ip/route/{route_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"Route not found: {route_id}")
         return result
 
@@ -259,10 +259,15 @@ def register(mcp: FastMCP) -> None:
     ) -> list[dict[str, Any]]:
         """Gets a specific routing table."""
         manager = get_manager(ctx)
-        rows = await manager.get("ip/route")
+        rows_raw = await manager.get("ip/route")
+        rows = (
+            [row for row in rows_raw if isinstance(row, dict)]
+            if isinstance(rows_raw, list)
+            else []
+        )
         if not rows:
             return []
-        filtered = rows
+        filtered: list[dict[str, Any]] = rows
         if table_name:
             filtered = [
                 r for r in filtered if r.get("routing-table", "main") == table_name

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
 
 from mikrotik_rest_mcp.tools.ip_address import (
     IpAddressCreate,
@@ -41,11 +42,11 @@ class TestIpAddressCreate:
         assert payload["disabled"] is True
 
     def test_address_too_short_raises(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             IpAddressCreate(address="ab", interface="ether1")
 
     def test_interface_too_short_raises(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             IpAddressCreate(address="192.168.1.1/24", interface="")
 
 

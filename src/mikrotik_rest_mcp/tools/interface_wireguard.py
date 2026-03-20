@@ -57,7 +57,12 @@ def register(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """Get one WireGuard interface by name."""
         manager = get_manager(ctx)
-        rows = await manager.get("interface/wireguard", params={"name": name}) or []
+        rows_raw = await manager.get("interface/wireguard", params={"name": name})
+        rows = (
+            [row for row in rows_raw if isinstance(row, dict)]
+            if isinstance(rows_raw, list)
+            else []
+        )
         if not rows:
             raise ValueError(f"WireGuard interface not found: {name}")
         return rows[0]
@@ -160,7 +165,7 @@ def register(mcp: FastMCP) -> None:
         """Get a WireGuard peer by ID."""
         manager = get_manager(ctx)
         result = await manager.get(f"interface/wireguard/peers/{peer_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"WireGuard peer not found: {peer_id}")
         return result
 

@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
-
 from fastmcp import Context, FastMCP
-from fastmcp.dependencies import CurrentContext
 from fastmcp.exceptions import ToolError
 
 from ..connection import MikrotikConnectionManager
 
 
-def get_manager(ctx) -> MikrotikConnectionManager:
+def get_manager(ctx: Context) -> MikrotikConnectionManager:
     manager = ctx.lifespan_context.get("connection_manager")
     if not isinstance(manager, MikrotikConnectionManager):
         raise ToolError("MikroTik connection manager is not available")
@@ -17,24 +14,26 @@ def get_manager(ctx) -> MikrotikConnectionManager:
 
 
 def register_tools(mcp: FastMCP) -> None:
-    from . import dhcp_lease
-    from . import dhcp_pool
-    from . import dhcp_server
-    from . import dns
-    from . import dns_static
-    from . import firewall_address_list
-    from . import firewall_filter
-    from . import firewall_nat
-    from . import interface_vlan
-    from . import interface_wireguard
-    from . import interface_wireless
-    from . import ip_address
-    from . import ip_pool
-    from . import ip_route
-    from . import system_backup
-    from . import system_logs
-    from . import system_logging
-    from . import system_users
+    from . import (
+        dhcp_lease,
+        dhcp_pool,
+        dhcp_server,
+        dns,
+        dns_static,
+        firewall_address_list,
+        firewall_filter,
+        firewall_nat,
+        interface_vlan,
+        interface_wireguard,
+        interface_wireless,
+        ip_address,
+        ip_pool,
+        ip_route,
+        system_backup,
+        system_logging,
+        system_logs,
+        system_users,
+    )
 
     ip_address.register(mcp)
     ip_route.register(mcp)

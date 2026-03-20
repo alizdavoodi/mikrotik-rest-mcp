@@ -59,7 +59,12 @@ def register(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """Gets detailed information about a specific VLAN interface."""
         manager = get_manager(ctx)
-        rows = await manager.get("interface/vlan") or []
+        rows_raw = await manager.get("interface/vlan")
+        rows = (
+            [row for row in rows_raw if isinstance(row, dict)]
+            if isinstance(rows_raw, list)
+            else []
+        )
         for vlan in rows:
             if vlan.get("name") == name:
                 return vlan

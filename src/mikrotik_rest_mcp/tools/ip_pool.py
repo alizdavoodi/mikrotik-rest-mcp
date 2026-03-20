@@ -57,7 +57,12 @@ def register(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """Gets detailed information about a specific IP pool."""
         manager = get_manager(ctx)
-        rows = await manager.get("ip/pool") or []
+        rows_raw = await manager.get("ip/pool")
+        rows = (
+            [row for row in rows_raw if isinstance(row, dict)]
+            if isinstance(rows_raw, list)
+            else []
+        )
         for pool in rows:
             if pool.get("name") == name:
                 return pool
@@ -182,6 +187,8 @@ def register(mcp: FastMCP) -> None:
                 pool_id = p.get(".id")
                 break
         if not pool_id:
+            raise ValueError(f"IP pool not found: {name}")
+        if pool is None:
             raise ValueError(f"IP pool not found: {name}")
         current_ranges = pool.get("ranges", "")
         new_ranges = (

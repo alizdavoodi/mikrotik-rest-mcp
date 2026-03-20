@@ -2,12 +2,27 @@
 
 from __future__ import annotations
 
-import os
-
 import pytest
 from pydantic import ValidationError
 
 from mikrotik_rest_mcp.config import McpServerSettings, MikrotikConfig, get_settings
+
+
+@pytest.fixture(autouse=True)
+def clear_mikrotik_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in (
+        "MIKROTIK_HOST",
+        "MIKROTIK_USERNAME",
+        "MIKROTIK_PASSWORD",
+        "MIKROTIK_PORT",
+        "MIKROTIK_USE_SSL",
+        "MIKROTIK_SSL_VERIFY",
+        "MIKROTIK__MCP__TRANSPORT",
+        "MIKROTIK__MCP__HOST",
+        "MIKROTIK__MCP__PORT",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    get_settings.cache_clear()
 
 
 class TestMikrotikConfig:

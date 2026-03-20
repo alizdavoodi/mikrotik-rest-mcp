@@ -105,7 +105,7 @@ def register(mcp: FastMCP) -> None:
         """Get a single logging rule by ID (e.g., '*1')."""
         manager = get_manager(ctx)
         result = await manager.get(f"system/logging/{rule_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"Logging rule not found: {rule_id}")
         return result
 
@@ -205,7 +205,7 @@ def register(mcp: FastMCP) -> None:
         """Get a single logging action by ID (e.g., '*1') or name (e.g., 'memory')."""
         manager = get_manager(ctx)
         result = await manager.get(f"system/logging/action/{action_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"Logging action not found: {action_id}")
         return result
 

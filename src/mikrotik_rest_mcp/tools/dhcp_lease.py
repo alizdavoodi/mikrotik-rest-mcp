@@ -48,7 +48,7 @@ def register(mcp: FastMCP) -> None:
         """Get a DHCP lease by id."""
         manager = get_manager(ctx)
         result = await manager.get(f"ip/dhcp-server/lease/{lease_id}")
-        if not result:
+        if not isinstance(result, dict):
             raise ValueError(f"DHCP lease not found: {lease_id}")
         return result
 

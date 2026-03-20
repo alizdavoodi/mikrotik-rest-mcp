@@ -50,7 +50,12 @@ def register(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """Get details for one wireless interface."""
         manager = get_manager(ctx)
-        rows = await manager.get("interface/wireless", params={"name": name}) or []
+        rows_raw = await manager.get("interface/wireless", params={"name": name})
+        rows = (
+            [row for row in rows_raw if isinstance(row, dict)]
+            if isinstance(rows_raw, list)
+            else []
+        )
         if not rows:
             raise ValueError(f"Wireless interface not found: {name}")
         return rows[0]

@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -35,4 +35,5 @@ class MikrotikConfig(BaseSettings):
 
 @lru_cache(maxsize=1)
 def get_settings() -> MikrotikConfig:
-    return MikrotikConfig()
+    settings_cls: Any = MikrotikConfig
+    return cast(MikrotikConfig, settings_cls())
