@@ -1,6 +1,6 @@
 [project]
 name = "mikrotik-rest-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "FastMCP server for MikroTik RouterOS management"
 readme = "README.md"
 license = "MIT"
