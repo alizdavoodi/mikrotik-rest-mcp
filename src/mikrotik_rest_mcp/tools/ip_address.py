@@ -87,8 +87,8 @@ def register(mcp: FastMCP) -> None:
             raise ValueError(f"IP address entry not found: {address_id}")
         return result
 
-    @mcp.tool(name="mikrotik_add_ip_address", annotations=WRITE)
-    async def add_ip_address(
+    @mcp.tool(name="mikrotik_create_ip_address", annotations=WRITE)
+    async def create_ip_address(
         address: Annotated[str, Field(min_length=3)],
         interface: Annotated[str, Field(min_length=1)],
         network: str | None = None,
@@ -108,7 +108,9 @@ def register(mcp: FastMCP) -> None:
             disabled=disabled,
         ).model_dump(exclude_none=True)
         result = await manager.put("ip/address", json=payload)
-        return {"added": True, "id": result.get(".id")} if result else {"added": True}
+        return (
+            {"created": True, "id": result.get(".id")} if result else {"created": True}
+        )
 
     @mcp.tool(name="mikrotik_update_ip_address", annotations=WRITE)
     async def update_ip_address(

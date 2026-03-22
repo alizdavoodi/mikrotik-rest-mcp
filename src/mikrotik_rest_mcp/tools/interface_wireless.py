@@ -116,11 +116,10 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_scan_wireless_networks", annotations=READ)
     async def scan_wireless_networks(
-        interface: str, duration: int = 5, ctx: Context = CurrentContext()
+        interface: str, ctx: Context = CurrentContext()
     ) -> list[dict[str, Any]]:
         """Scan for nearby wireless networks on an interface."""
         manager = get_manager(ctx)
-        _ = duration
         await manager.post(f"interface/wireless/{interface}/scan", json={})
         rows = await manager.get("interface/wireless/scan") or []
         return rows

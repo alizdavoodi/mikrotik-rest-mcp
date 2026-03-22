@@ -56,16 +56,12 @@ def register(mcp: FastMCP) -> None:
     async def get_logs(
         topics: str | None = None,
         action: str | None = None,
-        time_filter: str | None = None,
         message_filter: str | None = None,
         prefix_filter: str | None = None,
         limit: int | None = None,
-        follow: bool = False,
-        print_as: str = "value",
         ctx: Context = CurrentContext(),
     ) -> list[dict[str, Any]]:
         """Return log entries with optional filters."""
-        _ = (time_filter, follow, print_as)
         manager = get_manager(ctx)
         rows = await manager.get("log") or []
         filtered = _filter_logs(rows, topics, action, message_filter, prefix_filter)
@@ -76,13 +72,11 @@ def register(mcp: FastMCP) -> None:
     @mcp.tool(name="mikrotik_search_logs", annotations=READ)
     async def search_logs(
         search_term: str,
-        time_filter: str | None = None,
         case_sensitive: bool = False,
         limit: int | None = None,
         ctx: Context = CurrentContext(),
     ) -> list[dict[str, Any]]:
         """Search log messages for a term."""
-        _ = time_filter
         manager = get_manager(ctx)
         rows = await manager.get("log") or []
         if case_sensitive:
@@ -97,12 +91,10 @@ def register(mcp: FastMCP) -> None:
     @mcp.tool(name="mikrotik_get_logs_by_severity", annotations=READ)
     async def get_logs_by_severity(
         severity: str,
-        time_filter: str | None = None,
         limit: int | None = None,
         ctx: Context = CurrentContext(),
     ) -> list[dict[str, Any]]:
         """Return logs filtered by severity topic."""
-        _ = time_filter
         manager = get_manager(ctx)
         rows = await manager.get("log") or []
         filtered = [r for r in rows if severity in str(r.get("topics", "")).split(",")]
@@ -113,12 +105,10 @@ def register(mcp: FastMCP) -> None:
     @mcp.tool(name="mikrotik_get_logs_by_topic", annotations=READ)
     async def get_logs_by_topic(
         topic: str,
-        time_filter: str | None = None,
         limit: int | None = None,
         ctx: Context = CurrentContext(),
     ) -> list[dict[str, Any]]:
         """Return logs filtered by topic."""
-        _ = time_filter
         manager = get_manager(ctx)
         rows = await manager.get("log") or []
         filtered = [r for r in rows if topic in str(r.get("topics", "")).split(",")]

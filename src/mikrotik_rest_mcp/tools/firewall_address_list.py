@@ -10,7 +10,7 @@ from ..app import DESTRUCTIVE, READ, WRITE
 from . import get_manager
 
 
-class AddressListAdd(BaseModel):
+class AddressListCreate(BaseModel):
     list_name: str = Field(min_length=1)
     address: str = Field(min_length=3)
     timeout: str | None = None
@@ -51,8 +51,8 @@ def register(mcp: FastMCP) -> None:
             raise ValueError(f"Address-list entry not found: {entry_id}")
         return result
 
-    @mcp.tool(name="mikrotik_add_firewall_address_list", annotations=WRITE)
-    async def add_firewall_address_list(
+    @mcp.tool(name="mikrotik_create_firewall_address_list", annotations=WRITE)
+    async def create_firewall_address_list(
         list_name: str,
         address: str,
         timeout: str | None = None,
@@ -72,7 +72,9 @@ def register(mcp: FastMCP) -> None:
         if comment:
             payload["comment"] = comment
         result = await manager.put("ip/firewall/address-list", json=payload)
-        return {"added": True, "id": result.get(".id")} if result else {"added": True}
+        return (
+            {"created": True, "id": result.get(".id")} if result else {"created": True}
+        )
 
     @mcp.tool(name="mikrotik_remove_firewall_address_list", annotations=DESTRUCTIVE)
     async def remove_firewall_address_list(

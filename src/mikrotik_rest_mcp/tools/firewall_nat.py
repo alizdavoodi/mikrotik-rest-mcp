@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import CurrentContext
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..app import DESTRUCTIVE, READ, WRITE
 from . import get_manager
@@ -121,7 +121,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_get_nat_rule", annotations=READ)
     async def get_nat_rule(
-        rule_id: str, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)], ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
         """Gets detailed information about a specific NAT rule."""
         manager = get_manager(ctx)
@@ -181,7 +181,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_update_nat_rule", annotations=WRITE)
     async def update_nat_rule(
-        rule_id: str,
+        rule_id: Annotated[str, Field(min_length=1)],
         chain: str | None = None,
         action: str | None = None,
         src_address: str | None = None,
@@ -228,7 +228,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_remove_nat_rule", annotations=DESTRUCTIVE)
     async def remove_nat_rule(
-        rule_id: str, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)], ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
         """Removes a NAT rule from MikroTik device."""
         manager = get_manager(ctx)
@@ -237,7 +237,9 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_move_nat_rule", annotations=WRITE)
     async def move_nat_rule(
-        rule_id: str, destination: int, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)],
+        destination: int,
+        ctx: Context = CurrentContext(),
     ) -> dict[str, Any]:
         """Moves a NAT rule to a different position in the chain."""
         manager = get_manager(ctx)
@@ -248,7 +250,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_enable_nat_rule", annotations=WRITE)
     async def enable_nat_rule(
-        rule_id: str, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)], ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
         """Enables a NAT rule."""
         manager = get_manager(ctx)
@@ -257,7 +259,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_disable_nat_rule", annotations=WRITE)
     async def disable_nat_rule(
-        rule_id: str, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)], ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
         """Disables a NAT rule."""
         manager = get_manager(ctx)

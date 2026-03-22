@@ -5,6 +5,8 @@ description = "FastMCP server for MikroTik RouterOS management"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
+authors = [{name = "Alireza Davoodi"}]
+keywords = ["mikrotik", "routeros", "mcp", "fastmcp", "network-management", "router", "rest-api"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: System Administrators",

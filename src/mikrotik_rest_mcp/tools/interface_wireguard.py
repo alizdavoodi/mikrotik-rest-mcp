@@ -169,8 +169,8 @@ def register(mcp: FastMCP) -> None:
             raise ValueError(f"WireGuard peer not found: {peer_id}")
         return result
 
-    @mcp.tool(name="mikrotik_add_wireguard_peer", annotations=WRITE)
-    async def add_wireguard_peer(
+    @mcp.tool(name="mikrotik_create_wireguard_peer", annotations=WRITE)
+    async def create_wireguard_peer(
         interface: str,
         public_key: str,
         allowed_address: str,
@@ -206,7 +206,7 @@ def register(mcp: FastMCP) -> None:
         if "persistent_keepalive" in payload:
             payload["persistent-keepalive"] = payload.pop("persistent_keepalive")
         result = await manager.put("interface/wireguard/peers", json=payload)
-        return {"added": True, "id": result.get(".id") if result else interface}
+        return {"created": True, "id": result.get(".id") if result else interface}
 
     @mcp.tool(name="mikrotik_update_wireguard_peer", annotations=WRITE)
     async def update_wireguard_peer(

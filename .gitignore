@@ -36,3 +36,7 @@ htmlcov/
 # Nix
 result
 result-*
+
+# AI/Agent knowledge base
+AGENTS.md
+**/AGENTS.md
