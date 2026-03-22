@@ -69,8 +69,8 @@ def register(mcp: FastMCP) -> None:
             raise ValueError(f"DNS static entry not found: {entry_id}")
         return result
 
-    @mcp.tool(name="mikrotik_add_dns_static", annotations=WRITE)
-    async def add_dns_static(
+    @mcp.tool(name="mikrotik_create_dns_static", annotations=WRITE)
+    async def create_dns_static(
         name: Annotated[str, Field(min_length=1)],
         address: str | None = None,
         cname: str | None = None,
@@ -94,7 +94,9 @@ def register(mcp: FastMCP) -> None:
         if "disabled" in payload:
             payload["disabled"] = "true" if payload["disabled"] else "false"
         result = await manager.put("ip/dns/static", json=payload)
-        return {"added": True, "id": result.get(".id")} if result else {"added": True}
+        return (
+            {"created": True, "id": result.get(".id")} if result else {"created": True}
+        )
 
     @mcp.tool(name="mikrotik_update_dns_static", annotations=WRITE)
     async def update_dns_static(

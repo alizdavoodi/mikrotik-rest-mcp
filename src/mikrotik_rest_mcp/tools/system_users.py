@@ -66,8 +66,8 @@ def register(mcp: FastMCP) -> None:
                 return user
         raise ValueError(f"User not found: {name}")
 
-    @mcp.tool(name="mikrotik_add_user", annotations=WRITE)
-    async def add_user(
+    @mcp.tool(name="mikrotik_create_user", annotations=WRITE)
+    async def create_user(
         name: str,
         password: str,
         group: str = "read",
@@ -89,7 +89,7 @@ def register(mcp: FastMCP) -> None:
         if comment:
             payload["comment"] = comment
         await manager.put("user", json=payload)
-        return {"added": True, "name": name}
+        return {"created": True, "name": name}
 
     @mcp.tool(name="mikrotik_update_user", annotations=WRITE)
     async def update_user(
@@ -212,8 +212,8 @@ def register(mcp: FastMCP) -> None:
                 return group
         raise ValueError(f"User group not found: {name}")
 
-    @mcp.tool(name="mikrotik_add_user_group", annotations=WRITE)
-    async def add_user_group(
+    @mcp.tool(name="mikrotik_create_user_group", annotations=WRITE)
+    async def create_user_group(
         name: str,
         policy: list[str],
         comment: str | None = None,
@@ -225,7 +225,7 @@ def register(mcp: FastMCP) -> None:
         if comment:
             payload["comment"] = comment
         await manager.put("user/group", json=payload)
-        return {"added": True, "name": name}
+        return {"created": True, "name": name}
 
     @mcp.tool(name="mikrotik_remove_user_group", annotations=DESTRUCTIVE)
     async def remove_user_group(
