@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import CurrentContext
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..app import DESTRUCTIVE, READ, WRITE
 from . import get_manager
@@ -136,7 +136,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_get_filter_rule", annotations=READ)
     async def get_filter_rule(
-        rule_id: str, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)], ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
         """Gets detailed information about a specific firewall filter rule."""
         manager = get_manager(ctx)
@@ -204,7 +204,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_update_filter_rule", annotations=WRITE)
     async def update_filter_rule(
-        rule_id: str,
+        rule_id: Annotated[str, Field(min_length=1)],
         chain: str | None = None,
         action: str | None = None,
         src_address: str | None = None,
@@ -259,7 +259,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_remove_filter_rule", annotations=DESTRUCTIVE)
     async def remove_filter_rule(
-        rule_id: str, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)], ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
         """Removes a firewall filter rule from MikroTik device."""
         manager = get_manager(ctx)
@@ -268,7 +268,9 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_move_filter_rule", annotations=WRITE)
     async def move_filter_rule(
-        rule_id: str, destination: int, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)],
+        destination: int,
+        ctx: Context = CurrentContext(),
     ) -> dict[str, Any]:
         """Moves a firewall filter rule to a different position in the chain."""
         manager = get_manager(ctx)
@@ -279,7 +281,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_enable_filter_rule", annotations=WRITE)
     async def enable_filter_rule(
-        rule_id: str, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)], ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
         """Enables a firewall filter rule."""
         manager = get_manager(ctx)
@@ -288,7 +290,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_disable_filter_rule", annotations=WRITE)
     async def disable_filter_rule(
-        rule_id: str, ctx: Context = CurrentContext()
+        rule_id: Annotated[str, Field(min_length=1)], ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
         """Disables a firewall filter rule."""
         manager = get_manager(ctx)
