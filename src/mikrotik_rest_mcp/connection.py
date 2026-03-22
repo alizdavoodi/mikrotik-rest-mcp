@@ -5,7 +5,7 @@ from typing import Any
 import httpx
 
 from .config import MikrotikConfig
-from .exceptions import ConnectionError
+from .exceptions import MikrotikConnectionError
 
 
 class MikrotikConnectionManager:
@@ -48,11 +48,11 @@ class MikrotikConnectionManager:
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 404:
                 return None
-            raise ConnectionError(
+            raise MikrotikConnectionError(
                 f"HTTP {exc.response.status_code}: {exc.response.text}"
             ) from exc
         except httpx.RequestError as exc:
-            raise ConnectionError(f"Request failed: {exc}") from exc
+            raise MikrotikConnectionError(f"Request failed: {exc}") from exc
 
     async def get(self, path: str, **kwargs: Any) -> Any:
         return await self.request("GET", path, **kwargs)

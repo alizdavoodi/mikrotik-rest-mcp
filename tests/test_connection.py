@@ -9,7 +9,7 @@ import pytest
 
 from mikrotik_rest_mcp.config import MikrotikConfig
 from mikrotik_rest_mcp.connection import MikrotikConnectionManager
-from mikrotik_rest_mcp.exceptions import ConnectionError
+from mikrotik_rest_mcp.exceptions import MikrotikConnectionError
 
 
 class TestMikrotikConnectionManager:
@@ -138,7 +138,7 @@ class TestMikrotikConnectionManager:
         manager = MikrotikConnectionManager(mock_settings)
         manager._client = mock_httpx_client
 
-        with pytest.raises(ConnectionError) as exc_info:
+        with pytest.raises(MikrotikConnectionError) as exc_info:
             await manager.get("ip/address")
 
         assert "500" in str(exc_info.value)
@@ -214,7 +214,7 @@ class TestMikrotikConnectionManager:
         manager = MikrotikConnectionManager(mock_settings)
         manager._client = mock_httpx_client
 
-        with pytest.raises(ConnectionError) as exc_info:
+        with pytest.raises(MikrotikConnectionError) as exc_info:
             await manager.request("GET", "ip/address")
 
         assert "Network error" in str(exc_info.value)
