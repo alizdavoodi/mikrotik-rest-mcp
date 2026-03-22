@@ -179,18 +179,15 @@ def register(mcp: FastMCP) -> None:
         """Expands an existing IP pool by adding more ranges."""
         manager = get_manager(ctx)
         rows = await manager.get("ip/pool") or []
-        pool = None
+        current_ranges = ""
         pool_id = None
         for p in rows:
             if p.get("name") == name:
-                pool = p
+                current_ranges = p.get("ranges", "")
                 pool_id = p.get(".id")
                 break
         if not pool_id:
             raise ValueError(f"IP pool not found: {name}")
-        if pool is None:
-            raise ValueError(f"IP pool not found: {name}")
-        current_ranges = pool.get("ranges", "")
         new_ranges = (
             f"{current_ranges},{additional_ranges}"
             if current_ranges
