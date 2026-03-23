@@ -127,6 +127,20 @@ Registered domains include:
 
 Tool naming convention follows `mikrotik_<verb>_<resource>`.
 
+## Use Cases
+
+Practical scenarios for managing RouterOS through natural language:
+
+| Scenario | Example Prompts |
+|----------|-----------------|
+| **Firewall Audit** | `"List all filter rules and identify missing drop rules"` · `"Show firewall rules without logging"` · `"Fix rule ordering so established connections are checked first"` |
+| **Security Hardening** | `"Find rules accepting connections from WAN"` · `"List system users and permissions"` · `"Check for management access from internet"` |
+| **Network Diagnostics** | `"Show active routes with potential loops"` · `"Which interfaces are down?"` · `"Check DNS resolution"` |
+| **DHCP Management** | `"List all DHCP leases older than 7 days"` · `"Create static lease for MAC 00:11:22:33:44:55"` · `"Which pools are running low?"` |
+| **WireGuard VPN** | `"Show WireGuard peers and handshake times"` · `"Add new peer with allowed IPs"` · `"Why can't I connect remotely?"` |
+| **DNS Management** | `"List static DNS entries"` · `"Add printer.local → 192.168.88.10"` · `"Show DNS cache statistics"` |
+| **Maintenance** | `"Remove disabled rules older than 30 days"` · `"Export firewall config"` · `"Run security audit"` |
+
 ## MCP Client Setup
 
 ### Context Window Considerations
