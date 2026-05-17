@@ -6,13 +6,12 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+from .annotations import DESTRUCTIVE, READ, WRITE
 from .config import get_settings
 from .connection import MikrotikConnectionManager
 from .tools import register_tools
 
-READ: dict[str, Any] = {"readOnlyHint": True, "destructiveHint": False}
-WRITE: dict[str, Any] = {"readOnlyHint": False, "destructiveHint": False}
-DESTRUCTIVE: dict[str, Any] = {"readOnlyHint": False, "destructiveHint": True}
+__all__ = ["DESTRUCTIVE", "READ", "WRITE", "mcp"]
 
 
 @asynccontextmanager
