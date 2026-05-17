@@ -1,20 +1,18 @@
+"""Bespoke system backup tools.
+
+Backups are a RouterOS workflow (POST to /system/backup/save) rather than a
+collection of records, so they don't fit the Submenu pattern.
+"""
+
 from __future__ import annotations
 
 from typing import Any
 
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import CurrentContext
-from pydantic import BaseModel
 
 from ..app import DESTRUCTIVE, READ, WRITE
-from . import get_manager
-
-
-class BackupCreate(BaseModel):
-    name: str | None = None
-    dont_encrypt: bool = False
-    include_password: bool = True
-    comment: str | None = None
+from ..submenu import get_manager
 
 
 def register(mcp: FastMCP) -> None:
@@ -28,16 +26,13 @@ def register(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """Create a RouterOS system backup."""
         manager = get_manager(ctx)
-        payload = BackupCreate(
-            name=name,
-            dont_encrypt=dont_encrypt,
-            include_password=include_password,
-            comment=comment,
-        ).model_dump(exclude_none=True)
-        if "dont_encrypt" in payload:
-            payload["dont-encrypt"] = str(payload.pop("dont_encrypt")).lower()
-        if "include_password" in payload:
-            payload["password"] = str(payload.pop("include_password")).lower()
+        payload: dict[str, Any] = {}
+        if name is not None:
+            payload["name"] = name
+        if comment is not None:
+            payload["comment"] = comment
+        payload["dont-encrypt"] = "true" if dont_encrypt else "false"
+        payload["password"] = "true" if include_password else "false"
         await manager.post("system/backup/save", json=payload)
         return {"created": True, "name": name}
 
@@ -47,7 +42,7 @@ def register(mcp: FastMCP) -> None:
         include_exports: bool = False,
         ctx: Context = CurrentContext(),
     ) -> list[dict[str, Any]]:
-        """List backup and optional export files from RouterOS."""
+        """List backup (and optionally export) files from RouterOS."""
         manager = get_manager(ctx)
         rows = await manager.get("file") or []
         filtered = []
@@ -66,7 +61,7 @@ def register(mcp: FastMCP) -> None:
     async def download_file(
         filename: str, file_type: str = "backup", ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
-        """Download file content as base64 text if available in API response."""
+        """Download file content as base64 text if available in the API response."""
         manager = get_manager(ctx)
         rows = await manager.get("file", params={"name": filename}) or []
         if not rows:
@@ -84,7 +79,7 @@ def register(mcp: FastMCP) -> None:
     async def upload_file(
         filename: str, content_base64: str, ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
-        """Upload base64 content as file contents via RouterOS file API."""
+        """Upload base64 content as a file via the RouterOS file API."""
         manager = get_manager(ctx)
         await manager.post("file", json={"name": filename, "contents": content_base64})
         return {"uploaded": True, "filename": filename}
@@ -93,7 +88,7 @@ def register(mcp: FastMCP) -> None:
     async def restore_backup(
         filename: str, password: str | None = None, ctx: Context = CurrentContext()
     ) -> dict[str, Any]:
-        """Restore a RouterOS backup from file."""
+        """Restore a RouterOS backup from a file."""
         manager = get_manager(ctx)
         payload: dict[str, Any] = {"name": filename}
         if password:

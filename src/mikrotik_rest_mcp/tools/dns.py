@@ -1,31 +1,25 @@
+"""Bespoke DNS tools.
+
+DNS configuration is a RouterOS singleton (``/ip/dns`` is one record, not a
+collection), so it doesn't fit the Submenu CRUD pattern.
+"""
+
 from __future__ import annotations
 
 from typing import Annotated, Any
 
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import CurrentContext
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from ..app import READ, WRITE
-from . import get_manager
-
-
-class DnsSettingsUpdate(BaseModel):
-    servers: list[str] = Field(min_length=1)
-    allow_remote_requests: bool = False
-    max_udp_packet_size: int | None = None
-    max_concurrent_queries: int | None = None
-    cache_size: int | None = None
-    cache_max_ttl: str | None = None
-    use_doh: bool = False
-    doh_server: str | None = None
-    verify_doh_cert: bool = True
+from ..submenu import get_manager
 
 
 def register(mcp: FastMCP) -> None:
     @mcp.tool(name="mikrotik_get_dns_settings", annotations=READ)
     async def get_dns_settings(ctx: Context = CurrentContext()) -> dict[str, Any]:
-        """Gets current DNS configuration."""
+        """Get current DNS configuration."""
         manager = get_manager(ctx)
         result = await manager.get("ip/dns")
         return result or {}
@@ -43,7 +37,7 @@ def register(mcp: FastMCP) -> None:
         verify_doh_cert: bool = True,
         ctx: Context = CurrentContext(),
     ) -> dict[str, Any]:
-        """Sets DNS server configuration."""
+        """Set DNS server configuration."""
         manager = get_manager(ctx)
         payload: dict[str, Any] = {
             "servers": ",".join(servers),
@@ -66,13 +60,13 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mikrotik_get_dns_cache", annotations=READ)
     async def get_dns_cache(ctx: Context = CurrentContext()) -> list[dict[str, Any]]:
-        """Gets the current DNS cache."""
+        """Get the current DNS cache."""
         manager = get_manager(ctx)
         return await manager.get("ip/dns/cache") or []
 
     @mcp.tool(name="mikrotik_flush_dns_cache", annotations=WRITE)
     async def flush_dns_cache(ctx: Context = CurrentContext()) -> dict[str, Any]:
-        """Flushes the DNS cache."""
+        """Flush the DNS cache."""
         manager = get_manager(ctx)
         await manager.delete("ip/dns/cache")
         return {"flushed": True}
@@ -81,6 +75,6 @@ def register(mcp: FastMCP) -> None:
     async def get_dns_cache_statistics(
         ctx: Context = CurrentContext(),
     ) -> dict[str, Any]:
-        """Gets DNS cache statistics."""
+        """Get DNS cache statistics."""
         manager = get_manager(ctx)
         return await manager.get("ip/dns/cache/all") or {}

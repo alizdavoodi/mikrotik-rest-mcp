@@ -1,3 +1,10 @@
+"""Bespoke system log tools.
+
+The log endpoint exposes a read-only stream of entries plus a clear action.
+Filtering is multi-faceted (topics list, message substring, severity), so
+these tools stay bespoke rather than fitting the Submenu CRUD pattern.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -6,7 +13,7 @@ from fastmcp import Context, FastMCP
 from fastmcp.dependencies import CurrentContext
 
 from ..app import DESTRUCTIVE, READ
-from . import get_manager
+from ..submenu import get_manager
 
 
 def _filter_logs(
