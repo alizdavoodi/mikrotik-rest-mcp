@@ -40,3 +40,7 @@ result-*
 # AI/Agent knowledge base
 AGENTS.md
 **/AGENTS.md
+
+# oh-my-claudecode tooling state
+.omc/
+**/.omc/
