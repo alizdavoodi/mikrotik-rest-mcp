@@ -5,7 +5,7 @@ from typing import Any
 import httpx
 
 from .config import MikrotikConfig
-from .exceptions import MikrotikConnectionError
+from .exceptions import MikrotikConnectionError, MikrotikNotFound
 
 
 class MikrotikConnectionManager:
@@ -56,6 +56,27 @@ class MikrotikConnectionManager:
 
     async def get(self, path: str, **kwargs: Any) -> Any:
         return await self.request("GET", path, **kwargs)
+
+    async def get_list(self, path: str, **kwargs: Any) -> list[dict[str, Any]]:
+        """GET a RouterOS submenu collection. Always returns a list."""
+        result = await self.request("GET", path, **kwargs)
+        if result is None:
+            return []
+        if not isinstance(result, list):
+            raise MikrotikConnectionError(
+                f"Expected list from {path}, got {type(result).__name__}"
+            )
+        return [row for row in result if isinstance(row, dict)]
+
+    async def get_one(
+        self, path: str, identifier: str | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
+        """GET a single RouterOS record. Raises MikrotikNotFound on 404."""
+        full = path if identifier is None else f"{path}/{identifier}"
+        result = await self.request("GET", full, **kwargs)
+        if not isinstance(result, dict):
+            raise MikrotikNotFound(path, identifier)
+        return result
 
     async def put(self, path: str, **kwargs: Any) -> Any:
         return await self.request("PUT", path, **kwargs)
