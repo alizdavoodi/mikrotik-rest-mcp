@@ -44,10 +44,13 @@ def mock_connection_manager(mock_settings: MikrotikConfig) -> AsyncMock:
     """Create mock MikrotikConnectionManager for testing tools.
 
     This fixture provides a mock connection manager with all HTTP methods
-    pre-configured as AsyncMock. Use this to test tool functions in isolation.
+    plus the typed list/one helpers pre-configured as AsyncMock. Use this to
+    test tool functions in isolation.
     """
     manager = AsyncMock(spec=MikrotikConnectionManager)
     manager.get = AsyncMock(return_value=[])
+    manager.get_list = AsyncMock(return_value=[])
+    manager.get_one = AsyncMock(return_value={})
     manager.put = AsyncMock(return_value={".id": "*1"})
     manager.patch = AsyncMock(return_value={})
     manager.delete = AsyncMock(return_value={})
