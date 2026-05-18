@@ -114,7 +114,7 @@ class Equals:
     def matches(self, row: dict[str, Any], value: Any) -> bool:
         if isinstance(value, int) and not isinstance(value, bool):
             return str(value) == str(row.get(self.field))
-        return row.get(self.field) == value
+        return bool(row.get(self.field) == value)
 
 
 @dataclass(frozen=True)
